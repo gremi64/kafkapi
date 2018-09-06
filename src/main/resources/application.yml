@@ -1,0 +1,21 @@
+logging:
+  level:
+    org:
+      springframework: INFO
+
+
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      auto-offset-reset: earliest
+      auto-commit-interval: 1000
+      session-timeout-ms: 30000
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      application-id: myNiceKafkapi
+      group-id: blabla
+      enable-auto-commit: false
+    properties:
+      security.protocol: PLAINTEXT
+
