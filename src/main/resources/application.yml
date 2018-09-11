@@ -19,3 +19,21 @@ spring:
     properties:
       security.protocol: PLAINTEXT
 
+
+kafkapi:
+  kafka:
+    security:
+      domain: user1
+      user:
+        user1:
+          key-password:
+          keystore-location:
+          keystore-password:
+          truststore-location:
+          truststore-password:
+        user2:
+          key-password:
+          keystore-location:
+          keystore-password:
+          truststore-location:
+          truststore-password:

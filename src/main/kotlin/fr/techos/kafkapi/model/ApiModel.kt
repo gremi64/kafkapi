@@ -1,22 +1,20 @@
 package fr.techos.kafkapi.model
 
-data class CommitOffsetInformation (val committedOffset: Long?,
-                                    val topic: String,
-                                    val group: String,
-                                    val partition: Int,
-                                    val previousOffset: Long?)
+data class CommitResult (val committedOffset: Long?,
+                         val topic: String,
+                         val group: String,
+                         val partition: Int,
+                         val previousOffset: Long?)
 
-data class OffsetsInformation (val position: Long,
-                               val committed: Long?)
+data class OffsetsResult (val position: Long,
+                          val committed: Long?)
 
-data class TopicGroupOffsetInformation (val topic: String,
-                                        val group: String,
-                                        var partitionOffsetInformation: List<PartitionOffsetInformation>) {
+data class TopicGroupOffsetResult (val topic: String,
+                                   val group: String,
+                                   var partitionOffsetResult: List<PartitionOffsetResult>)
 
-    data class PartitionOffsetInformation (val partition: Int,
-                                           val offset: Long?)
-
-}
+data class PartitionOffsetResult (val partition: Int,
+                                  val offset: Long?)
 
 data class TopicMessage(val topic: String,
                         val group: String,
