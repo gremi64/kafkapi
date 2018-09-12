@@ -2,6 +2,7 @@ package fr.techos.kafkapi.config
 
 import mu.KotlinLogging
 import org.apache.kafka.clients.CommonClientConfigs
+import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.config.SslConfigs
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties
@@ -13,7 +14,7 @@ import java.util.*
 
 @Configuration
 @EnableKafka
-@EnableConfigurationProperties(KafkaProperties::class, KafkaSecurityProperties::class)
+@EnableConfigurationProperties(KafkaProperties::class, KafkaSecurityProperties::class, KafkaEnvProperties::class)
 class KafkaConfig {
     private val logger = KotlinLogging.logger {}
 
@@ -23,18 +24,40 @@ class KafkaConfig {
     @Autowired
     lateinit var kafkaSecurityProperties: KafkaSecurityProperties
 
+
+    @Autowired
+    lateinit var kafkaEnvProperties: KafkaEnvProperties
+
     @Bean
     fun kafkaConsumerConfig(): Properties {
         val properties = Properties()
         properties.putAll(kafkaProperties.buildConsumerProperties())
-        if ("SSL" == kafkaProperties.properties[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG]) {
-            properties.putAll(this.kafkaSecurityConfig())
+        // Environment
+        properties.putAll(this.kafkaEnvConfig())
+        return properties
+    }
+
+    private fun kafkaEnvConfig(): Properties {
+        val properties = Properties()
+        logger.info { "Selected environment : ${this.kafkaEnvProperties.selected}" }
+        val prop = this.kafkaEnvProperties.available[this.kafkaEnvProperties.selected]
+        prop?.let {
+            with(properties) {
+                put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, it.bootstrapServers)
+                putAll(it.properties)
+                if ("SSL" == it.properties[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG]) {
+                    putAll(kafkaSecurityConfig())
+                }
+            }
         }
+
+        logger.debug { "Environment properties officially loaded : $properties" }
         return properties
     }
 
     private fun kafkaSecurityConfig(): Properties {
         val properties = Properties()
+        logger.info { "Selected security user : ${this.kafkaSecurityProperties.domain}" }
         val prop = this.kafkaSecurityProperties.user[this.kafkaSecurityProperties.domain]
         prop?.let {
             with(properties) {
@@ -45,8 +68,8 @@ class KafkaConfig {
                 put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, it.truststorePassword)
             }
         }
-        logger.info { "Security properties officially loaded : $properties" }
+        // Attention a l'affichage du mot de passe...
+        logger.debug { "Security properties officially loaded : $properties" }
         return properties
     }
-
 }
