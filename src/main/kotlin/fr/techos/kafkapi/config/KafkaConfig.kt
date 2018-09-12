@@ -50,7 +50,6 @@ class KafkaConfig {
                 }
             }
         }
-
         logger.debug { "Environment properties officially loaded : $properties" }
         return properties
     }
