@@ -1,38 +1,11 @@
 import React, { Component } from 'react';
 
-import { Icon, Label, Menu, Table } from 'semantic-ui-react'
-import { Progress, Container } from 'semantic-ui-react'
-import { Header, Image } from 'semantic-ui-react'
+import { Icon, Table, Progress, Container, Header } from 'semantic-ui-react'
 
 class TopicOffsets extends Component {
-
-  state = {
-    result: {
-      "topic": "he_dev_executableOperation_priv_v1",
-      "group": "he_dev_u5_executableOperation",
-      "partitionOffsetResult": [
-        {
-          "partition": 0,
-          "offset": 12,
-          "minOffset": 0,
-          "maxOffset": 100
-
-        },
-        {
-          "partition": 1,
-          "offset": 75,
-          "minOffset": 0,
-          "maxOffset": 100
-        },
-        {
-          "partition": 2,
-          "offset": 148,
-          "minOffset": 100,
-          "maxOffset": 150
-        }
-      ]
-    }
-  };
+  constructor(props) {
+    super(props);
+  }
 
   getColor(percent) {
     if (percent < 25) {
@@ -50,8 +23,8 @@ class TopicOffsets extends Component {
         <div>
           <Header as='h2' icon textAlign='center'>
             <Icon name='blind' circular />
-            <Header.Content>Topic : {this.state.result.topic}<br />
-              Groupe: {this.state.result.group}
+            <Header.Content>Topic : {this.props.topic}<br />
+              Groupe: {this.props.group}
             </Header.Content>
           </Header>
         </div>
@@ -67,10 +40,10 @@ class TopicOffsets extends Component {
           </Table.Header>
 
           <Table.Body>
-            {this.state.result.partitionOffsetResult.map(i => {
+            {this.props.partitionOffsetResult.map(i => {
               const percentage = (i.offset - i.minOffset) / (i.maxOffset - i.minOffset) * 100;
               return (
-                <Table.Row>
+                <Table.Row key={i.partition}>
                   <Table.Cell>{i.partition}</Table.Cell>
                   <Table.Cell>{i.minOffset}</Table.Cell>
                   <Table.Cell>{i.offset}</Table.Cell>

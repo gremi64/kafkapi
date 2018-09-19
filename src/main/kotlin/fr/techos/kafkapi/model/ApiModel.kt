@@ -14,7 +14,9 @@ data class TopicGroupOffsetResult (val topic: String,
                                    var partitionOffsetResult: List<PartitionOffsetResult>)
 
 data class PartitionOffsetResult (val partition: Int,
-                                  val offset: Long?)
+                                  val minOffset: Long?,
+                                  val offset: Long?,
+                                  val maxOffset: Long?)
 
 data class TopicMessage(val topic: String,
                         val group: String,

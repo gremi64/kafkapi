@@ -5,7 +5,7 @@ networks:
 
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:4.1.2
+    image: confluentinc/cp-zookeeper:3.2.1
     environment:
       ZOOKEEPER_SERVER_ID: 1
       ZOOKEEPER_CLIENT_PORT: 2181
@@ -20,7 +20,7 @@ services:
 
 
   kafka:
-    image: confluentinc/cp-kafka:4.1.2
+    image: confluentinc/cp-kafka:3.2.1
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -37,7 +37,7 @@ services:
 
   schema-registry:
     container_name: schema-registry
-    image: confluentinc/cp-schema-registry:4.1.2
+    image: confluentinc/cp-schema-registry:3.2.1
     environment:
       SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: zookeeper:2181
       SCHEMA_REGISTRY_HOST_NAME: localhost
@@ -53,7 +53,7 @@ services:
 
   kafka-rest:
     container_name: kafka-rest
-    image: confluentinc/cp-kafka-rest:4.1.2
+    image: confluentinc/cp-kafka-rest:3.3.1
     environment:
       KAFKA_REST_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_REST_HOST_NAME: kafka-rest
@@ -76,7 +76,7 @@ services:
     container_name: schema-registry-ui
     image: landoop/schema-registry-ui:latest
     environment:
-      SCHEMAREGISTRY_URL: http://localhost:8081
+      SCHEMAREGISTRY_URL: http://schema-registry:8081
     networks:
       - back
     ports:
@@ -86,7 +86,7 @@ services:
     container_name: kafka-topic-ui
     image: landoop/kafka-topics-ui:latest
     environment:
-      KAFKA_REST_PROXY_URL: http://localhost:8082
+      KAFKA_REST_PROXY_URL: http://kafka-rest:8082
     networks:
       - back
     ports:

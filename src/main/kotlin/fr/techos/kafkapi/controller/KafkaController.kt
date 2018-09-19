@@ -86,7 +86,7 @@ class KafkaController {
             // Assignation de la partition
             val topicPartition = TopicPartition(topic, it.partition())
             kafkaConsumer.assign(mutableListOf(topicPartition))
-            partitionOffsetResult.add(PartitionOffsetResult(it.partition(), kafkaConsumer.committed(topicPartition)?.offset()))
+            partitionOffsetResult.add(offsetsInfos(kafkaConsumer, topicPartition))
             logger.info("End of work for partition ${it.partition()}")
         }
 
@@ -124,6 +124,15 @@ class KafkaController {
         return CommitResult(newCommittedOffset, topic, group, partition, oldOffsetsInformation.committed)
     }
 
+
+    private fun offsetsInfos(kafkaConsumer: KafkaConsumer<String, String>, topicPartition: TopicPartition) : PartitionOffsetResult {
+        val partitionNumber = topicPartition.partition()
+        val currentOffset = kafkaConsumer.committed(topicPartition)?.offset()
+        val minOffset = kafkaConsumer.beginningOffsets(mutableListOf(topicPartition))?.get(topicPartition)
+        val maxOffset = kafkaConsumer.endOffsets(mutableListOf(topicPartition))?.get(topicPartition)
+
+        return PartitionOffsetResult(partitionNumber, minOffset, currentOffset, maxOffset)
+    }
 
     private fun pollMessages(kafkaConsumer: KafkaConsumer<String, String>, topic: String, group: String): MutableList<TopicMessage> {
         val partResult = mutableListOf<TopicMessage>()

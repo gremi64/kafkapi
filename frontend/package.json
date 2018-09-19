@@ -19,6 +19,10 @@
     "/api": {
       "target": "http://localhost:8080",
       "ws": true
+    },
+    "/offsets": {
+      "target": "http://localhost:8080",
+      "ws": true
     }
   }
 }
