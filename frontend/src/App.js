@@ -14,14 +14,17 @@ class App extends Component {
                 topic: "test",
                 group: "",
                 partitionOffsetResult: []
-            }
+            },
+            brokers: [],
+            securities: []
         };
-        this.handleClick = this.handleClick.bind(this)
-        this.offsetsResult();
+        this.handleClick = this.handleClick.bind(this);
     }
 
     componentDidMount() {
-        setInterval(this.offsetsResult, 10000);
+        this.offsetsResult();
+        this.getConsumerConfigs();
+        //setInterval(this.offsetsResult, 10000);
     }
 
     offsetsResult = () => {
@@ -34,6 +37,29 @@ class App extends Component {
                     this.setState({ result: message });
                 }
             });
+    };
+
+    getConsumerConfigs() {
+        fetch('/config/consumers')
+        .then(response => {
+            return response.json()
+        })
+        .then(message => {
+            if (message) {
+                var brokers = [];
+                message.brokers.forEach(function(broker) {
+                    brokers.push({ key: broker.first, text: broker.second, value: broker.second });
+                });
+
+                var securities = [];
+                message.securityOptions.forEach(function(security) {
+                    securities.push({ key: security.first, text: security.second, value: security.second });
+                });
+
+                this.setState({ brokers: brokers });
+                this.setState({ securities: securities });
+            }
+        });
     };
 
     handleClick(event) {
@@ -52,9 +78,17 @@ class App extends Component {
                     <Header as='h2' icon textAlign='center'>
                         <Icon name='blind' circular />
                     </Header>
-                    <TopicOffsetsForm handleClick={this.handleClick} topicForm={this.state.topicForm} groupForm={this.state.groupForm} />
+                    <TopicOffsetsForm 
+                        handleClick={ this.handleClick }
+                        topicForm={ this.state.topicForm }
+                        groupForm={ this.state.groupForm }
+                        brokers={ this.state.brokers }
+                        securities={ this.state.securities } />
                     <br/>
-                    <TopicOffsets topic={this.state.result.topic} group={this.state.result.group} partitionOffsetResult={this.state.result.partitionOffsetResult} />
+                    <TopicOffsets 
+                        topic={ this.state.result.topic }
+                        group={ this.state.result.group }
+                        partitionOffsetResult={ this.state.result.partitionOffsetResult } />
                 </Container>
             </div>
         );

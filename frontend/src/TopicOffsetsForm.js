@@ -8,6 +8,8 @@ class TopicOffsetsForm extends Component {
         this.state = {
             topicForm: props.topicForm,
             groupForm: props.groupForm,
+            brokers: props.brokers,
+            securities: props.securities
         };
     }
 
@@ -20,7 +22,7 @@ class TopicOffsetsForm extends Component {
                             fluid
                             id='myTopic'
                             label='Topic'
-                            value={this.state.topicForm}
+                            value={ this.state.topicForm }
                             onChange={e => this.setState({
                                 topicForm: e.target.value
                             })}
@@ -29,14 +31,19 @@ class TopicOffsetsForm extends Component {
                             fluid
                             id='myGroup'
                             label='Group'
-                            value={this.state.groupForm}
+                            value={ this.state.groupForm }
                             onChange={e => this.setState({
                                 groupForm: e.target.value
                             })}
                         />
                     </Form.Group>
+                    <Form.Group widths='equal'>
+                        <Form.Dropdown fluid placeholder='Select brokers' search selection options={ this.props.brokers } />
+                        <Form.Dropdown fluid placeholder='Select security' search selection options={ this.props.securities } />
+                    </Form.Group>
                     <Button type='submit'>Let's find my offsets</Button>
                 </Form>
+                
             </Container>
         );
     }
