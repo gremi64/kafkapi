@@ -24,7 +24,6 @@ class KafkaConfig {
     @Autowired
     lateinit var kafkaSecurityProperties: KafkaSecurityProperties
 
-
     @Autowired
     lateinit var kafkaEnvProperties: KafkaEnvProperties
 

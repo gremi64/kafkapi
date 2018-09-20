@@ -1,6 +1,8 @@
 package fr.techos.kafkapi.controller
 
 
+import fr.techos.kafkapi.config.KafkaEnvProperties
+import fr.techos.kafkapi.config.KafkaSecurityProperties
 import fr.techos.kafkapi.model.*
 import mu.KotlinLogging
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -20,6 +22,12 @@ class KafkaController {
 
     @Autowired
     lateinit var kafkaConsumerConfig: Properties
+
+    @Autowired
+    lateinit var kafkaSecurityProperties: KafkaSecurityProperties
+
+    @Autowired
+    lateinit var kafkaEnvProperties: KafkaEnvProperties
 
     /**
      * Renvoie la liste de tous les messages d'un topic, toutes partitions confondues
@@ -98,6 +106,18 @@ class KafkaController {
         closeConsumer(kafkaConsumer)
 
         return results
+    }
+
+    @GetMapping("/config/consumers")
+    fun getConsumerConfigs(): KafkaConsumerConfigs {
+        val securityConfigsList = mutableListOf<Pair<String, String>>()
+        this.kafkaSecurityProperties.user.forEach { userKey, properties -> securityConfigsList.add(Pair(UUID.randomUUID().toString(), userKey)) }
+
+        val brokersList = mutableListOf<Pair<String, String>>()
+        this.kafkaEnvProperties.available.forEach { brokerAlias, properties -> brokersList.add(Pair(brokerAlias, properties.bootstrapServers)) }
+
+        logger.info { "Sending config > ${KafkaConsumerConfigs(brokersList, securityConfigsList)}" }
+        return KafkaConsumerConfigs(brokersList, securityConfigsList)
     }
 
     /**
