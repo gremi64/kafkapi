@@ -81,7 +81,7 @@ class KafkaController {
         val partitionOffsetResult = mutableListOf<PartitionOffsetResult>()
         val results = TopicGroupOffsetResult(topic, group, partitionOffsetResult)
 
-        kafkaConsumer.partitionsFor(topic).forEach {
+        kafkaConsumer.partitionsFor(topic)?.forEach {
             logger.info("Processing partition ${it.partition()}")
             // Assignation de la partition
             val topicPartition = TopicPartition(topic, it.partition())

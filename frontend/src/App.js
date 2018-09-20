@@ -1,22 +1,22 @@
 import React, { Component } from 'react';
 import TopicOffsets from './TopicOffsets';
 import TopicOffsetsForm from './TopicOffsetsForm';
-import './App.css';
+import { Icon, Header, Container } from 'semantic-ui-react';
 
 class App extends Component {
 
     constructor(props) {
         super(props);
         this.state = {
-            buttonTitle: "Go !",
-            topicForm: null,
-            groupForm: null,
+            topicForm: "he_dev_executableOperation_priv_v1",
+            groupForm: "he_dev_u5_executableOperation",
             result: {
                 topic: "test",
                 group: "",
                 partitionOffsetResult: []
             }
         };
+        this.handleClick = this.handleClick.bind(this)
         this.offsetsResult();
     }
 
@@ -25,7 +25,7 @@ class App extends Component {
     }
 
     offsetsResult = () => {
-        fetch('/offsets/he_dev_executableOperation_priv_v1?group=he_dev_u5_executableOperation')
+        fetch('/offsets/' + this.state.topicForm + '?group=' + this.state.groupForm)
             .then(response => {
                 return response.json()
             })
@@ -36,11 +36,26 @@ class App extends Component {
             });
     };
 
+    handleClick(event) {
+        this.setState({
+            topicForm: event.target.myTopic.value,
+            groupForm: event.target.myGroup.value
+        }, function () {
+            this.offsetsResult();
+        });
+    }
+
     render() {
         return (
             <div className="App">
-                <TopicOffsetsForm buttonTitle={this.state.buttonTitle} topicForm={this.state.topicForm} groupForm={this.state.groupForm}/>
-                <TopicOffsets topic={this.state.result.topic} group={this.state.result.group} partitionOffsetResult={this.state.result.partitionOffsetResult} />
+                <Container textAlign='center'>
+                    <Header as='h2' icon textAlign='center'>
+                        <Icon name='blind' circular />
+                    </Header>
+                    <TopicOffsetsForm handleClick={this.handleClick} topicForm={this.state.topicForm} groupForm={this.state.groupForm} />
+                    <br/>
+                    <TopicOffsets topic={this.state.result.topic} group={this.state.result.group} partitionOffsetResult={this.state.result.partitionOffsetResult} />
+                </Container>
             </div>
         );
     }
