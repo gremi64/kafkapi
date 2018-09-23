@@ -9,14 +9,38 @@ class TopicOffsetsForm extends Component {
             topicForm: props.topicForm,
             groupForm: props.groupForm,
             brokers: props.brokers,
-            securities: props.securities
+            brokersForm: "",
+            securities: props.securities,
+            securityForm: "",
         };
+
+        //this.handleBrokersChange = this.handleBrokersChange.bind(this);
+    }
+    
+    handleBrokersChange = (event, data) => {
+        const { value } = data;
+        const { key } = data.options.find(o => o.value === value);
+        console.log('Selected brokers key > ' + key);
+        
+        this.setState({brokersForm: key});
+    }
+
+    handleSecurityChange = (event, data) => {
+        const { value } = data;
+        const { key } = data.options.find(o => o.value === value);
+        console.log('Selected security key > ' + key);
+        
+        this.setState({securityForm: key});
+    }
+
+    onClickForm = () => {
+        this.props.onClickForm(this.state.topicForm, this.state.groupForm, this.state.brokersForm, this.state.securityForm);
     }
 
     render() {
         return (
             <Container>
-                <Form onSubmit={this.props.handleClick}>
+                <Form>
                     <Form.Group widths='equal'>
                         <Form.Input
                             fluid
@@ -38,10 +62,10 @@ class TopicOffsetsForm extends Component {
                         />
                     </Form.Group>
                     <Form.Group widths='equal'>
-                        <Form.Dropdown fluid placeholder='Select brokers' search selection options={ this.props.brokers } />
-                        <Form.Dropdown fluid placeholder='Select security' search selection options={ this.props.securities } />
+                        <Form.Dropdown  fluid placeholder='Select brokers' search selection options={ this.props.brokers } onChange={ this.handleBrokersChange } />
+                        <Form.Dropdown fluid placeholder='Select security' search selection options={ this.props.securities } onChange={ this.handleSecurityChange } />
                     </Form.Group>
-                    <Button type='submit'>Let's find my offsets</Button>
+                    <Button onClick={ this.onClickForm }>Let's find my offsets</Button>
                 </Form>
                 
             </Container>

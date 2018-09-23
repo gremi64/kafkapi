@@ -4,7 +4,6 @@ import fr.techos.kafkapi.config.KafkaEnvProperties
 import fr.techos.kafkapi.config.KafkaSecurityProperties
 import fr.techos.kafkapi.model.KafkaConsumerConfigs
 import mu.KotlinLogging
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters.fromObject
 import org.springframework.web.reactive.function.server.ServerRequest
@@ -12,7 +11,6 @@ import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.ServerResponse.ok
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
-import java.util.*
 
 @Component
 class ConfigHandler(
@@ -23,7 +21,7 @@ class ConfigHandler(
 
     fun getConsumerConfigs(request: ServerRequest): Mono<ServerResponse> {
         val securityConfigsList = mutableListOf<Pair<String, String>>()
-        this.kafkaSecurityProperties.user.forEach { userKey, _ -> securityConfigsList.add(Pair(UUID.randomUUID().toString(), userKey)) }
+        this.kafkaSecurityProperties.user.forEach { userKey, properties -> securityConfigsList.add(Pair(userKey, properties.description)) }
 
         val brokersList = mutableListOf<Pair<String, String>>()
         this.kafkaEnvProperties.available.forEach { brokerAlias, properties -> brokersList.add(Pair(brokerAlias, properties.bootstrapServers)) }

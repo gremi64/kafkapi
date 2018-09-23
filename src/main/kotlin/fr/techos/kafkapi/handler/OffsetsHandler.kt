@@ -1,14 +1,18 @@
 package fr.techos.kafkapi.handler
 
+import fr.techos.kafkapi.config.KafkaEnvProperties
+import fr.techos.kafkapi.config.KafkaSecurityProperties
 import fr.techos.kafkapi.helper.KafkaConsumerHelper
 import fr.techos.kafkapi.model.CommitResult
 import fr.techos.kafkapi.model.PartitionOffsetResult
 import fr.techos.kafkapi.model.TopicGroupOffsetResult
 import mu.KotlinLogging
+import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.consumer.OffsetAndMetadata
 import org.apache.kafka.common.TopicPartition
+import org.apache.kafka.common.config.SslConfigs
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters.fromObject
 import org.springframework.web.reactive.function.server.ServerRequest
@@ -20,7 +24,9 @@ import java.time.Duration
 import java.util.*
 
 @Component
-class OffsetsHandler(val kafkaConsumerConfig: Properties) {
+class OffsetsHandler(val kafkaConsumerConfig: Properties,
+                     val kafkaSecurityProperties: KafkaSecurityProperties,
+                     val kafkaEnvProperties: KafkaEnvProperties) {
 
     private val logger = KotlinLogging.logger {}
 
@@ -56,8 +62,36 @@ class OffsetsHandler(val kafkaConsumerConfig: Properties) {
     fun offsetForTopic(request: ServerRequest): Mono<ServerResponse> {
         val topic: String = request.pathVariable("topic")
         val group: String = request.queryParam("group").orElse("myGroup")
+        val brokers: String? = request.queryParam("brokers").orElse(null)
+        val security: String? = request.queryParam("security").orElse(null)
 
         kafkaConsumerConfig[ConsumerConfig.GROUP_ID_CONFIG] = group
+
+        if (!brokers.isNullOrEmpty()) {
+            brokers.let { brokersKey ->
+                this.kafkaEnvProperties.available[brokersKey]?.bootstrapServers.let {
+                    kafkaConsumerConfig[ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG] = it
+                }
+            }
+        }
+
+        if (!security.isNullOrEmpty()) {
+            security.let {securityKey ->
+                val prop = this.kafkaSecurityProperties.user[securityKey]
+                prop?.let {
+                    kafkaConsumerConfig[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = it.securityProtocol
+                    kafkaConsumerConfig[SslConfigs.SSL_PROTOCOL_CONFIG] = it.securityProtocol
+                    if (it.securityProtocol == "SSL") {
+                        kafkaConsumerConfig[SslConfigs.SSL_KEY_PASSWORD_CONFIG] = it.keyPassword
+                        kafkaConsumerConfig[SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG] = it.keystoreLocation
+                        kafkaConsumerConfig[SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG] = it.keystorePassword
+                        kafkaConsumerConfig[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = it.truststoreLocation
+                        kafkaConsumerConfig[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = it.truststorePassword
+                    }
+                }
+            }
+        }
+
         val kafkaConsumer = KafkaConsumer<String, String>(kafkaConsumerConfig)
 
         val partitionOffsetResult = mutableListOf<PartitionOffsetResult>()

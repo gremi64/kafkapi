@@ -8,8 +8,8 @@ class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            topicForm: "he_dev_executableOperation_priv_v1",
-            groupForm: "he_dev_u5_executableOperation",
+            topicForm: "test-topic",
+            groupForm: "myGroup",
             result: {
                 topic: "test",
                 group: "",
@@ -18,25 +18,52 @@ class App extends Component {
             brokers: [],
             securities: []
         };
-        this.handleClick = this.handleClick.bind(this);
     }
 
     componentDidMount() {
-        this.offsetsResult();
+        document.title = 'Kafkapi'
         this.getConsumerConfigs();
         //setInterval(this.offsetsResult, 10000);
     }
 
-    offsetsResult = () => {
-        fetch('/offsets/' + this.state.topicForm + '?group=' + this.state.groupForm)
-            .then(response => {
-                return response.json()
-            })
-            .then(message => {
-                if (message) {
-                    this.setState({ result: message });
+    getOffsetsResult = () => {
+        console.log('Calling offset API state {"topic": "' + this.state.topicForm + '", "group": "' + this.state.groupForm + '", "brokers": ' + this.state.brokersForm + '", "security": "' + this.state.securityForm + '"}');
+        
+        if (this.state.topicForm) {
+            var uri = '/offsets/' + this.state.topicForm;
+
+            if (this.state.groupForm || this.state.brokersForm || this.state.securityForm) {
+                uri += '?';
+                var thereWasPreviousRequestParam = false;
+                if (this.state.groupForm) {
+                    uri += 'group=' + this.state.groupForm;
+                    thereWasPreviousRequestParam = true;
                 }
-            });
+                if (this.state.groupForm) {
+                    if (thereWasPreviousRequestParam) {
+                        uri += '&';
+                    } 
+                    uri += 'brokers=' + this.state.brokersForm;
+                }
+                if (this.state.groupForm) {
+                    if (thereWasPreviousRequestParam) {
+                        uri += '&';
+                    } 
+                    uri += 'security=' + this.state.securityForm;
+                }
+
+                console.log('Fetch using uri: ' + uri);
+                fetch(uri)
+                .then(response => {
+                    return response.json()
+                })
+                .then(message => {
+                    if (message) {
+                        this.setState({ result: message });
+                    }
+                });
+            }
+        }        
     };
 
     getConsumerConfigs() {
@@ -62,12 +89,15 @@ class App extends Component {
         });
     };
 
-    handleClick(event) {
+    onClickForm = (topicForm, groupForm, brokersForm, securityForm) => {
+        console.log('Submitted form with {"topic": "' + topicForm + '", "group": "' + groupForm + '", "brokers": ' + brokersForm + '", "security": "' + securityForm + '"}');
         this.setState({
-            topicForm: event.target.myTopic.value,
-            groupForm: event.target.myGroup.value
+            topicForm: topicForm,
+            groupForm: groupForm,
+            brokersForm: brokersForm,
+            securityForm: securityForm,
         }, function () {
-            this.offsetsResult();
+            this.getOffsetsResult();
         });
     }
 
@@ -79,7 +109,7 @@ class App extends Component {
                         <Icon name='blind' circular />
                     </Header>
                     <TopicOffsetsForm 
-                        handleClick={ this.handleClick }
+                        onClickForm={ this.onClickForm }
                         topicForm={ this.state.topicForm }
                         groupForm={ this.state.groupForm }
                         brokers={ this.state.brokers }
