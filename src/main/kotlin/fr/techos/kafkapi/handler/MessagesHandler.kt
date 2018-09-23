@@ -1,16 +1,12 @@
 package fr.techos.kafkapi.handler
 
-import fr.techos.kafkapi.model.OffsetsResult
+import fr.techos.kafkapi.helper.KafkaConsumerHelper
 import fr.techos.kafkapi.model.TopicMessage
 import mu.KotlinLogging
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.TopicPartition
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.BodyInserters.fromObject
 import org.springframework.web.reactive.function.server.ServerRequest
@@ -34,7 +30,9 @@ class MessagesHandler(val kafkaConsumerConfig: Properties) {
         val topic: String = request.pathVariable("topic")
         val group: String = request.queryParam("group").orElse("myGroup")
 
-        val kafkaConsumer = getKafkaConsumer(group)
+        kafkaConsumerConfig[ConsumerConfig.GROUP_ID_CONFIG] = group
+        val kafkaConsumer = KafkaConsumer<String, String>(kafkaConsumerConfig)
+
         val results = mutableMapOf<Int, List<TopicMessage>>()
 
         kafkaConsumer.partitionsFor(topic).forEach {
@@ -46,7 +44,8 @@ class MessagesHandler(val kafkaConsumerConfig: Properties) {
             logger.info("End of work for partition ${it.partition()}")
         }
 
-        closeConsumer(kafkaConsumer)
+        logger.info("Closing KafkaConsumer")
+        kafkaConsumer.close(Duration.ofSeconds(10))
 
         return ok().body(BodyInserters.fromObject(results)).toMono()
     }
@@ -61,12 +60,13 @@ class MessagesHandler(val kafkaConsumerConfig: Properties) {
         val group: String = request.queryParam("group").orElse("myGroup")
         val limit: Int = request.queryParam("limit").orElse("10").toInt()
 
-        val kafkaConsumer = getKafkaConsumer(group)
+        kafkaConsumerConfig[ConsumerConfig.GROUP_ID_CONFIG] = group
+        val kafkaConsumer = KafkaConsumer<String, String>(kafkaConsumerConfig)
 
         // Assignation de la partition qui nous intéresse
         val topicPartition = TopicPartition(topic, partition)
         kafkaConsumer.assign(mutableListOf(topicPartition))
-        val oldOffsetsInformation = setOffset(kafkaConsumer, topicPartition, offset)
+        val oldOffsetsInformation = KafkaConsumerHelper.setOffset(kafkaConsumer, topicPartition, offset)
         logger.info("Partition ${topicPartition.partition()} : Current offset is ${oldOffsetsInformation.position} " +
                 "Committed offset is ->${oldOffsetsInformation.committed}")
 
@@ -87,50 +87,5 @@ class MessagesHandler(val kafkaConsumerConfig: Properties) {
             workToDo = !polled.isEmpty
         }
         return partResult
-    }
-
-    private fun closeConsumer(kafkaConsumer: KafkaConsumer<String, String>) {
-        logger.info("Closing KafkaConsumer")
-        kafkaConsumer.close(Duration.ofSeconds(10))
-    }
-
-    private fun getKafkaConsumer(group: String): KafkaConsumer<String, String> {
-        // Configuration
-        kafkaConsumerConfig[ConsumerConfig.GROUP_ID_CONFIG] = group
-
-        // Création du consumer avec la config à jour
-        return KafkaConsumer(kafkaConsumerConfig)
-    }
-
-    /**
-     * Renvoie l'offset commité ainsi que l'offset courant (après modification éventuelle)
-     */
-    private fun setOffset(kafkaConsumer: KafkaConsumer<String, String>, topicPartition: TopicPartition, offset: Long): OffsetsResult {
-        val committed = kafkaConsumer.committed(topicPartition)
-
-        when (offset) {
-            -2L -> {
-                logger.info("Leaving offset alone")
-                // Si on ne souhaite pas modifier l'offset (= -2) et qu'on a jamais lu ce topic-groupe-partition
-                // On choisi de dire qu'on commence au début et non à la fin (=mode latest arrangé)
-                if (committed == null) {
-                    logger.info("Setting offset to beginning even if latest mode is active")
-                    kafkaConsumer.seekToBeginning(mutableListOf(topicPartition))
-                }
-            }
-            0L -> {
-                logger.info("Setting offset to begining")
-                kafkaConsumer.seekToBeginning(mutableListOf(topicPartition))
-            }
-            -1L -> {
-                logger.info("Setting it to the end")
-                kafkaConsumer.seekToEnd(mutableListOf(topicPartition))
-            }
-            else -> {
-                logger.info("Resetting offset to $offset")
-                kafkaConsumer.seek(topicPartition, offset)
-            }
-        }
-        return OffsetsResult(kafkaConsumer.position(topicPartition), committed?.offset())
     }
 }
