@@ -15,14 +15,11 @@ import reactor.core.publisher.toMono
 import java.util.*
 
 @Component
-class ConfigHandler {
+class ConfigHandler(
+        val kafkaSecurityProperties: KafkaSecurityProperties,
+        val kafkaEnvProperties: KafkaEnvProperties) {
+
     private val logger = KotlinLogging.logger {}
-
-    @Autowired
-    lateinit var kafkaSecurityProperties: KafkaSecurityProperties
-
-    @Autowired
-    lateinit var kafkaEnvProperties: KafkaEnvProperties
 
     fun getConsumerConfigs(request: ServerRequest): Mono<ServerResponse> {
         val securityConfigsList = mutableListOf<Pair<String, String>>()

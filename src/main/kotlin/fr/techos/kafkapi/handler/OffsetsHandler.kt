@@ -24,12 +24,9 @@ import java.time.Duration
 import java.util.*
 
 @Component
-class OffsetsHandler {
+class OffsetsHandler(val kafkaConsumerConfig: Properties) {
 
     private val logger = KotlinLogging.logger {}
-
-    @Autowired
-    lateinit var kafkaConsumerConfig: Properties
 
     /**
      * Commit l'offset d'un topic, pou UN groupe, sur UNE seule partition, à partir d'UN offset donné

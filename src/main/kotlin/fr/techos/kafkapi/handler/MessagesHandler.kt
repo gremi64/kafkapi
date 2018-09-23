@@ -23,11 +23,9 @@ import java.util.*
 import kotlin.math.min
 
 @Component
-class MessagesHandler {
-    private val logger = KotlinLogging.logger {}
+class MessagesHandler(val kafkaConsumerConfig: Properties) {
 
-    @Autowired
-    lateinit var kafkaConsumerConfig: Properties
+    private val logger = KotlinLogging.logger {}
 
     /**
      * Renvoie la liste de tous les messages d'un topic, toutes partitions confondues
