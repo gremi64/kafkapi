@@ -24,12 +24,16 @@ kafkapi:
       domain: user1
       user:
         user1:
+          description:
+          securityProtocol:
           key-password: key-pwd
           keystore-location: /keystore.jks
           keystore-password: keystore-pwd
           truststore-location: /truststore.jks
           truststore-password: truststore-pwd
         user2:
+          description:
+          securityProtocol:
           key-password:
           keystore-location:
           keystore-password:

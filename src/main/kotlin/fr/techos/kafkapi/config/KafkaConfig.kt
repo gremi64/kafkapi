@@ -6,7 +6,6 @@ import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.config.SslConfigs
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
-import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.kafka.annotation.EnableKafka
 import java.util.*
@@ -20,8 +19,7 @@ class KafkaConfig(val kafkaProperties: KafkaProperties,
 
     private val logger = KotlinLogging.logger {}
 
-    @Bean
-    fun kafkaConsumerConfig(): Properties {
+    fun getKafkaConsumerConfig(): Properties {
         val properties = Properties()
         properties.putAll(kafkaProperties.buildConsumerProperties())
         properties.putAll(this.kafkaEnvConfig())

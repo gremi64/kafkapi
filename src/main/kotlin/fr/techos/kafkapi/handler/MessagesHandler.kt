@@ -1,5 +1,6 @@
 package fr.techos.kafkapi.handler
 
+import fr.techos.kafkapi.config.KafkaConfig
 import fr.techos.kafkapi.helper.KafkaConsumerHelper
 import fr.techos.kafkapi.model.TopicMessage
 import mu.KotlinLogging
@@ -15,11 +16,10 @@ import org.springframework.web.reactive.function.server.ServerResponse.ok
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
 import java.time.Duration
-import java.util.*
 import kotlin.math.min
 
 @Component
-class MessagesHandler(val kafkaConsumerConfig: Properties) {
+class MessagesHandler(val kafkaConfig: KafkaConfig) {
 
     private val logger = KotlinLogging.logger {}
 
@@ -29,6 +29,8 @@ class MessagesHandler(val kafkaConsumerConfig: Properties) {
     fun messagesForTopic(request: ServerRequest): Mono<ServerResponse> {
         val topic: String = request.pathVariable("topic")
         val group: String = request.queryParam("group").orElse("myGroup")
+
+        val kafkaConsumerConfig = kafkaConfig.getKafkaConsumerConfig()
 
         kafkaConsumerConfig[ConsumerConfig.GROUP_ID_CONFIG] = group
         val kafkaConsumer = KafkaConsumer<String, String>(kafkaConsumerConfig)
@@ -59,6 +61,8 @@ class MessagesHandler(val kafkaConsumerConfig: Properties) {
         val offset: Long = request.queryParam("offset").orElse("-2").toLong()
         val group: String = request.queryParam("group").orElse("myGroup")
         val limit: Int = request.queryParam("limit").orElse("10").toInt()
+
+        val kafkaConsumerConfig = kafkaConfig.getKafkaConsumerConfig()
 
         kafkaConsumerConfig[ConsumerConfig.GROUP_ID_CONFIG] = group
         val kafkaConsumer = KafkaConsumer<String, String>(kafkaConsumerConfig)

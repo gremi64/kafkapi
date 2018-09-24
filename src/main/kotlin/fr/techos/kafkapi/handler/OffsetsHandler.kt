@@ -1,5 +1,6 @@
 package fr.techos.kafkapi.handler
 
+import fr.techos.kafkapi.config.KafkaConfig
 import fr.techos.kafkapi.config.KafkaEnvProperties
 import fr.techos.kafkapi.config.KafkaSecurityProperties
 import fr.techos.kafkapi.helper.KafkaConsumerHelper
@@ -21,10 +22,9 @@ import org.springframework.web.reactive.function.server.ServerResponse.ok
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
 import java.time.Duration
-import java.util.*
 
 @Component
-class OffsetsHandler(val kafkaConsumerConfig: Properties,
+class OffsetsHandler(val kafkaConfig: KafkaConfig,
                      val kafkaSecurityProperties: KafkaSecurityProperties,
                      val kafkaEnvProperties: KafkaEnvProperties) {
 
@@ -39,6 +39,8 @@ class OffsetsHandler(val kafkaConsumerConfig: Properties,
         val partition: Int = request.pathVariable("partition").toInt()
         val group: String = request.queryParam("group").orElse("myGroup")
         val offset: Long = request.queryParam("offset").orElse("-2").toLong()
+
+        val kafkaConsumerConfig = kafkaConfig.getKafkaConsumerConfig()
 
         kafkaConsumerConfig[ConsumerConfig.GROUP_ID_CONFIG] = group
         val kafkaConsumer = KafkaConsumer<String, String>(kafkaConsumerConfig)
@@ -64,6 +66,8 @@ class OffsetsHandler(val kafkaConsumerConfig: Properties,
         val group: String = request.queryParam("group").orElse("myGroup")
         val brokers: String? = request.queryParam("brokers").orElse(null)
         val security: String? = request.queryParam("security").orElse(null)
+
+        val kafkaConsumerConfig = kafkaConfig.getKafkaConsumerConfig()
 
         kafkaConsumerConfig[ConsumerConfig.GROUP_ID_CONFIG] = group
 
