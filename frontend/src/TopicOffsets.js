@@ -35,7 +35,15 @@ const TopicOffsets = (props) => {
                 <Table.Cell>{i.partition}</Table.Cell>
                 <Table.Cell>{i.minOffset}</Table.Cell>
                 <Table.Cell>
-                  <Progress percent={percentage} color={getColor(percentage)}>{i.offset || "No commited offset"}
+                  <Progress percent={percentage} color={getColor(percentage)}>{
+                      (() => {
+                        if (i.offset != null && isFinite(i.offset)) {
+                          return i.offset;
+                        } else {
+                          return "No commited offset";
+                        }
+                      })()
+                    }
                   </Progress>
                 </Table.Cell>
                 <Table.Cell>{i.maxOffset}</Table.Cell>
