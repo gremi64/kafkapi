@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Table, Progress, Container  } from 'semantic-ui-react'
+import { Table, Progress, Container, Loader, Dimmer  } from 'semantic-ui-react'
 
 function getColor(percent) {
   if (percent === 0 || isNaN(percent)) {
@@ -27,7 +27,10 @@ const TopicOffsets = (props) => {
           </Table.Row>
         </Table.Header>
 
-        <Table.Body>
+        <Table.Body className='dimmable'>
+          <Dimmer inverted active={props.loadingOffset}>
+            <Loader />
+          </Dimmer>
           {props.partitionOffsetResult.map(i => {
             const percentage = (i.offset - i.minOffset) / (i.maxOffset - i.minOffset) * 100;
             return (

@@ -16,7 +16,8 @@ class App extends Component {
                 partitionOffsetResult: []
             },
             brokers: [],
-            securities: []
+            securities: [],
+            loadingOffset: false
         };
     }
 
@@ -31,7 +32,8 @@ class App extends Component {
         
         if (this.state.topicForm) {
             var uri = '/offsets/' + this.state.topicForm;
-
+            this.setState({ loadingOffset: true });
+            
             if (this.state.groupForm || this.state.brokersForm || this.state.securityForm) {
                 uri += '?';
                 var thereWasPreviousRequestParam = false;
@@ -59,7 +61,7 @@ class App extends Component {
                 })
                 .then(message => {
                     if (message) {
-                        this.setState({ result: message });
+                        this.setState({ result: message, loadingOffset: false });
                     }
                 });
             }
@@ -118,7 +120,8 @@ class App extends Component {
                     <TopicOffsets 
                         topic={ this.state.result.topic }
                         group={ this.state.result.group }
-                        partitionOffsetResult={ this.state.result.partitionOffsetResult } />
+                        partitionOffsetResult={ this.state.result.partitionOffsetResult } 
+                        loadingOffset= { this.state.loadingOffset }/>
                 </Container>
             </div>
         );
