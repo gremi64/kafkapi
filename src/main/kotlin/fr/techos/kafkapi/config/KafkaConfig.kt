@@ -26,6 +26,35 @@ class KafkaConfig(val kafkaProperties: KafkaProperties,
         return properties
     }
 
+    fun getBootstrapServersForKey(key: String): Properties {
+        val props = Properties()
+
+        this.kafkaEnvProperties.available[key]?.bootstrapServers.let {
+            props[ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG] = it
+        }
+
+        return props
+    }
+
+    fun getSecurityPropsForKey(key: String): Properties {
+        val props = Properties()
+
+        val prop = this.kafkaSecurityProperties.user[key]
+        prop?.let {
+            props[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = it.securityProtocol
+            props[SslConfigs.SSL_PROTOCOL_CONFIG] = it.securityProtocol
+            if (it.securityProtocol == "SSL") {
+                props[SslConfigs.SSL_KEY_PASSWORD_CONFIG] = it.keyPassword
+                props[SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG] = it.keystoreLocation
+                props[SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG] = it.keystorePassword
+                props[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = it.truststoreLocation
+                props[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = it.truststorePassword
+            }
+        }
+
+        return props
+    }
+
     private fun kafkaEnvConfig(): Properties {
         val properties = Properties()
         logger.info { "Selected environment : ${this.kafkaEnvProperties.selected}" }
