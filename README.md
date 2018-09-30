@@ -22,5 +22,5 @@ We are using [React](https://reactjs.org/) <img src="https://humancoders-formati
 - Show available configs: brokers and security (need improvments for dynamic config :hammer: )
 
 ## Compatibility
-The tool is developed using versions of Kafka you can find in [docker-compose file](kafkapi/blob/master/src/main/resources/docker-compose.yml)
+The tool is developed using versions of Kafka you can find in [docker-compose file](/src/main/resources/docker-compose.yml)
 
