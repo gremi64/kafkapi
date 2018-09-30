@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Icon, Header, Container, Divider } from 'semantic-ui-react';
+import { Container, Divider } from 'semantic-ui-react';
 
 import TopicOffsets from './TopicOffsets';
 import TopicOffsetsForm from './TopicOffsetsForm';
@@ -26,9 +26,6 @@ class OffsetsPanel extends Component {
     return (
       <Container textAlign='center'>
         <Divider hidden />
-        <Header as='h2' icon textAlign='center'>
-          <Icon name='blind' circular />
-        </Header>
         <TopicOffsetsForm 
             onClickForm={ this.onClickForm }
             topicForm={ this.state.topicForm }

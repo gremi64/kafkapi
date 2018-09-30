@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "moment": "^2.22.2",
     "react": "^16.5.0",
     "react-dom": "^16.5.0",
     "react-scripts": "1.1.5",
@@ -25,6 +26,10 @@
       "ws": true
     },
     "/config": {
+      "target": "http://localhost:8080",
+      "ws": true
+    },
+    "/messages": {
       "target": "http://localhost:8080",
       "ws": true
     }
