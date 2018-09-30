@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Container, Table, Divider, Header } from 'semantic-ui-react';
+import { Container, Table, Divider, Header, Icon } from 'semantic-ui-react';
 
 class MessagesPanel extends Component {
   constructor(props) {
@@ -12,6 +12,11 @@ class MessagesPanel extends Component {
   render() {
     return (
       <Container>
+        <Divider hidden />
+        <Header as='h2' icon textAlign='center'>
+          <Icon name='list' circular />
+        </Header>
+
         { this.state.messages != null && Object.keys(this.state.messages).map(property => {
           return (
             this.getCells(property)
@@ -21,7 +26,10 @@ class MessagesPanel extends Component {
     );
   };
 
-  
+  componentDidMount() {
+    console.log('Mounted message panel');
+    this.getMessages();
+  };
 
   getCells = (property) => {
     if (this.state.messages[property].length === 0) {
@@ -30,33 +38,7 @@ class MessagesPanel extends Component {
       );
     } else {
       return (
-        <Container key={ property }>
-          <Divider hidden/><Divider hidden={ property === '0' }/>
-          <Header as='h3'>Partition: { property }</Header>
-          <Table celled>
-            <Table.Header>
-              <Table.Row>
-                <Table.HeaderCell width={2}>Offset</Table.HeaderCell>
-                <Table.HeaderCell width={2}>Timestamp</Table.HeaderCell>
-                <Table.HeaderCell width={2}>Key</Table.HeaderCell>
-                <Table.HeaderCell>Message</Table.HeaderCell>
-              </Table.Row>
-            </Table.Header>
-
-            <Table.Body>
-            { this.state.messages[property].map(element => {
-              return (
-                <Table.Row key={element.offset}>
-                  <Table.Cell>{element.offset}</Table.Cell>
-                  <Table.Cell>{element.timestamp}</Table.Cell>
-                  <Table.Cell>{element.key}</Table.Cell>
-                  <Table.Cell>{element.message}</Table.Cell>
-                </Table.Row>
-              )
-            })}
-            </Table.Body>
-          </Table>
-        </Container>
+        this.getTableWithData(property)
       );
     }
   };
@@ -83,9 +65,36 @@ class MessagesPanel extends Component {
     )
   };
 
-  componentDidMount() {
-    console.log('Mounted message panel');
-    this.getMessages();
+  getTableWithData = (property) => {
+    return (
+      <Container key={ property }>
+        <Divider hidden/><Divider hidden={ property === '0' }/>
+        <Header as='h3'>Partition: { property }</Header>
+        <Table celled>
+          <Table.Header>
+            <Table.Row>
+              <Table.HeaderCell width={2}>Offset</Table.HeaderCell>
+              <Table.HeaderCell width={2}>Timestamp</Table.HeaderCell>
+              <Table.HeaderCell width={2}>Key</Table.HeaderCell>
+              <Table.HeaderCell>Message</Table.HeaderCell>
+            </Table.Row>
+          </Table.Header>
+
+          <Table.Body>
+          { this.state.messages[property].map(element => {
+            return (
+              <Table.Row key={element.offset}>
+                <Table.Cell>{element.offset}</Table.Cell>
+                <Table.Cell>{element.timestamp}</Table.Cell>
+                <Table.Cell>{element.key}</Table.Cell>
+                <Table.Cell>{element.message}</Table.Cell>
+              </Table.Row>
+            )
+          })}
+          </Table.Body>
+        </Table>
+      </Container>
+    );
   };
 
   getNumberOfMessages = (numberOfMessages) => {
