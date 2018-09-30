@@ -1,13 +1,15 @@
 import React, { Component } from 'react';
-import OffsetsPanel from './components/offsets/OffsetsPanel';
 import { Container, Menu } from 'semantic-ui-react';
+
+import OffsetsPanel from './components/offsets/OffsetsPanel';
+import MessagesPanel from './components/messages/MessagesPanel';
 
 class App extends Component {
 
     constructor(props) {
         super(props);
         this.state = {
-            activeItem: 'Offsets',
+            activeItem: 'Messages',
         };
     };
 
@@ -23,11 +25,9 @@ class App extends Component {
                     </Menu> 
                 </Container>
 
-                { this.state.activeItem === 'Offsets' && <OffsetsPanel />}
+                { this.state.activeItem === 'Offsets' && <OffsetsPanel /> }
 
-                { this.state.activeItem === 'Messages' && <Container>
-                    Ici on va afficher des messages
-                </Container>}
+                { this.state.activeItem === 'Messages' && <MessagesPanel /> }
             </div>
         );
     };
