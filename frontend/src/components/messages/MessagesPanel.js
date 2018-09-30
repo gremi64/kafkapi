@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Container } from 'semantic-ui-react';
+import { Container, Divider } from 'semantic-ui-react';
 
 import MessagesForm from './MessagesForm';
 import MessagesTables from './MessagesTables';
@@ -21,6 +21,7 @@ class MessagesPanel extends Component {
           brokers={ this.state.brokers } 
           securities={ this.state.securities } 
           onFormSubmit={ this.onFormSubmit } />
+        <Divider hidden/>
         <MessagesTables 
           messages={ this.state.messages } 
           loadingOffset={ this.state.loadingOffset } />
