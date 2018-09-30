@@ -13,28 +13,6 @@ class TopicOffsetsForm extends Component {
             securities: props.securities,
             securityForm: "",
         };
-
-        //this.handleBrokersChange = this.handleBrokersChange.bind(this);
-    }
-    
-    handleBrokersChange = (event, data) => {
-        const { value } = data;
-        const { key } = data.options.find(o => o.value === value);
-        console.log('Selected brokers key > ' + key);
-        
-        this.setState({brokersForm: key});
-    }
-
-    handleSecurityChange = (event, data) => {
-        const { value } = data;
-        const { key } = data.options.find(o => o.value === value);
-        console.log('Selected security key > ' + key);
-        
-        this.setState({securityForm: key});
-    }
-
-    onClickForm = () => {
-        this.props.onClickForm(this.state.topicForm, this.state.groupForm, this.state.brokersForm, this.state.securityForm);
     }
 
     render() {
@@ -70,7 +48,27 @@ class TopicOffsetsForm extends Component {
                 
             </Container>
         );
-    }
+    };
+
+    handleBrokersChange = (event, data) => {
+        const { value } = data;
+        const { key } = data.options.find(o => o.value === value);
+        console.log('Selected brokers key > ' + key);
+        
+        this.setState({brokersForm: key});
+    };
+
+    handleSecurityChange = (event, data) => {
+        const { value } = data;
+        const { key } = data.options.find(o => o.value === value);
+        console.log('Selected security key > ' + key);
+        
+        this.setState({securityForm: key});
+    };
+
+    onClickForm = () => {
+        this.props.onClickForm(this.state.topicForm, this.state.groupForm, this.state.brokersForm, this.state.securityForm);
+    };
 }
 
 export default TopicOffsetsForm;

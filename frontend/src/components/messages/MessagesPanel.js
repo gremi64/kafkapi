@@ -1,115 +1,87 @@
 import React, { Component } from 'react';
-import moment from 'moment';
-import { Container, Table, Divider, Header } from 'semantic-ui-react';
+import { Container } from 'semantic-ui-react';
+
+import MessagesForm from './MessagesForm';
+import MessagesTables from './MessagesTables';
 
 class MessagesPanel extends Component {
   constructor(props) {
     super(props);
     this.state = {
       messages: null,
+      brokers: [],
+      securities: []
     };
   };
 
   render() {
     return (
       <Container>
-        { this.state.messages != null && Object.keys(this.state.messages).map(property => {
-          return (
-            this.getCells(property)
-          );
-        })}
+        <MessagesForm 
+          brokers={ this.state.brokers } 
+          securities={ this.state.securities } 
+          onFormSubmit={ this.onFormSubmit } />
+        <MessagesTables 
+          messages={ this.state.messages } 
+          loadingOffset={ this.state.loadingOffset } />
       </Container>
     );
   };
 
   componentDidMount() {
     console.log('Mounted message panel');
-    this.getMessages();
+    this.getConsumerConfigs();
   };
 
-  getCells = (property) => {
-    if (this.state.messages[property].length === 0) {
-      return (
-        this.getEmptyTable(property)
-      );
-    } else {
-      return (
-        this.getTableWithData(property)
-      );
-    }
-  };
-
-  getEmptyTable = (property) => {
-    return (
-      <Container key={ property }>
-        <Divider hidden/><Divider />
-        <Header as='h3'>Partition: { property }</Header>
-        <Table celled textAlign='center'>
-          <Table.Header>
-            <Table.Row>
-              <Table.HeaderCell width={2}>Offset</Table.HeaderCell>
-              <Table.HeaderCell width={3}>Timestamp</Table.HeaderCell>
-              <Table.HeaderCell width={2}>Key</Table.HeaderCell>
-              <Table.HeaderCell>Message</Table.HeaderCell>
-            </Table.Row>
-          </Table.Header>
-
-          <Table.Body>
-          </Table.Body>
-        </Table>
-      </Container>
-    )
-  };
-
-  getTableWithData = (property) => {
-    return (
-      <Container key={ property }>
-        <Divider hidden/><Divider hidden={ property === '0' }/>
-        <Header as='h3'>Partition: { property }</Header>
-        <Table celled textAlign='center'>
-          <Table.Header>
-            <Table.Row>
-              <Table.HeaderCell width={2}>Offset</Table.HeaderCell>
-              <Table.HeaderCell width={3}>Timestamp</Table.HeaderCell>
-              <Table.HeaderCell width={2}>Key</Table.HeaderCell>
-              <Table.HeaderCell>Message</Table.HeaderCell>
-            </Table.Row>
-          </Table.Header>
-
-          <Table.Body>
-          { this.state.messages[property].map(element => {
-            return (
-              <Table.Row key={ element.offset }>
-                <Table.Cell>{ element.offset }</Table.Cell>
-                <Table.Cell>{ moment(element.timestamp).format("YYYY-MM-DD HH:mm") }</Table.Cell>
-                <Table.Cell>{ element.key }</Table.Cell>
-                <Table.Cell textAlign='left'>{ element.message }</Table.Cell>
-              </Table.Row>
-            )
-          })}
-          </Table.Body>
-        </Table>
-      </Container>
-    );
-  };
-
-  getNumberOfMessages = (numberOfMessages) => {
-    if (numberOfMessages === 0) {
-      return 1;
-    } else {
-      return numberOfMessages;
-    }
+  onFormSubmit = (selectedTopic, selectedBrokers, selectedSecurity) => {
+    this.setState({
+      selectedTopic: selectedTopic,
+      selectedBrokers: selectedBrokers,
+      selectedSecurity: selectedSecurity
+    }, function () {
+      this.getMessages();
+    });
   };
 
   getMessages = () => {
-    fetch('/messages/test-topic')
+    this.setState({ loadingOffset: true }, function() {
+      var uri = '/messages/' + this.state.selectedTopic;
+      console.log('Calling API on ' + uri);
+      fetch(uri)
+      .then(response => {
+          return response.json()
+      })
+      .then(message => {
+          if (message) {
+            this.setState({ 
+              messages: message,
+              loadingOffset: false
+            });
+          }
+      });
+    });
+  };
+
+  getConsumerConfigs() {
+    fetch('/config/consumers')
     .then(response => {
-        return response.json()
+      return response.json()
     })
     .then(message => {
-        if (message) {
-          this.setState({ messages: message });
-        }
+      if (message) {
+        var brokers = [];
+        message.brokers.forEach(function(broker) {
+          brokers.push({ key: broker.first, text: broker.second, value: broker.second });
+        });
+
+        var securities = [];
+        message.securityOptions.forEach(function(security) {
+          securities.push({ key: security.first, text: security.second, value: security.second });
+        });
+
+        this.setState({ brokers: brokers });
+        this.setState({ securities: securities });
+      }
     });
   };
 };
