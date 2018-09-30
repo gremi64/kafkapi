@@ -1,131 +1,36 @@
 import React, { Component } from 'react';
-import TopicOffsets from './TopicOffsets';
-import TopicOffsetsForm from './TopicOffsetsForm';
-import { Icon, Header, Container } from 'semantic-ui-react';
+import OffsetsPanel from './components/offsets/OffsetsPanel';
+import { Container, Menu } from 'semantic-ui-react';
 
 class App extends Component {
 
     constructor(props) {
         super(props);
         this.state = {
-            topicForm: "test-topic",
-            groupForm: "myGroup",
-            result: {
-                topic: "test",
-                group: "",
-                partitionOffsetResult: []
-            },
-            brokers: [],
-            securities: [],
-            loadingOffset: false
+            activeItem: 'Offsets',
         };
-    }
-
-    componentDidMount() {
-        document.title = 'Kafkapi'
-        this.getConsumerConfigs();
-        //setInterval(this.offsetsResult, 10000);
-    }
-
-    getOffsetsResult = () => {
-        console.log('Calling offset API state {"topic": "' + this.state.topicForm + '", "group": "' + this.state.groupForm + '", "brokers": ' + this.state.brokersForm + '", "security": "' + this.state.securityForm + '"}');
-        
-        if (this.state.topicForm) {
-            var uri = '/offsets/' + this.state.topicForm;
-            this.setState({ loadingOffset: true });
-            
-            if (this.state.groupForm || this.state.brokersForm || this.state.securityForm) {
-                uri += '?';
-                var thereWasPreviousRequestParam = false;
-                if (this.state.groupForm) {
-                    uri += 'group=' + this.state.groupForm;
-                    thereWasPreviousRequestParam = true;
-                }
-                if (this.state.groupForm) {
-                    if (thereWasPreviousRequestParam) {
-                        uri += '&';
-                    } 
-                    uri += 'brokers=' + this.state.brokersForm;
-                }
-                if (this.state.groupForm) {
-                    if (thereWasPreviousRequestParam) {
-                        uri += '&';
-                    } 
-                    uri += 'security=' + this.state.securityForm;
-                }
-
-                console.log('Fetch using uri: ' + uri);
-                fetch(uri)
-                .then(response => {
-                    return response.json()
-                })
-                .then(message => {
-                    if (message) {
-                        this.setState({ result: message, loadingOffset: false });
-                    }
-                });
-            }
-        }        
     };
 
-    getConsumerConfigs() {
-        fetch('/config/consumers')
-        .then(response => {
-            return response.json()
-        })
-        .then(message => {
-            if (message) {
-                var brokers = [];
-                message.brokers.forEach(function(broker) {
-                    brokers.push({ key: broker.first, text: broker.second, value: broker.second });
-                });
-
-                var securities = [];
-                message.securityOptions.forEach(function(security) {
-                    securities.push({ key: security.first, text: security.second, value: security.second });
-                });
-
-                this.setState({ brokers: brokers });
-                this.setState({ securities: securities });
-            }
-        });
-    };
-
-    onClickForm = (topicForm, groupForm, brokersForm, securityForm) => {
-        console.log('Submitted form with {"topic": "' + topicForm + '", "group": "' + groupForm + '", "brokers": ' + brokersForm + '", "security": "' + securityForm + '"}');
-        this.setState({
-            topicForm: topicForm,
-            groupForm: groupForm,
-            brokersForm: brokersForm,
-            securityForm: securityForm,
-        }, function () {
-            this.getOffsetsResult();
-        });
-    }
+    handleMenuClick = (e, { name }) => this.setState({ activeItem: name });
 
     render() {
         return (
             <div className="App">
-                <Container textAlign='center'>
-                    <Header as='h2' icon textAlign='center'>
-                        <Icon name='blind' circular />
-                    </Header>
-                    <TopicOffsetsForm 
-                        onClickForm={ this.onClickForm }
-                        topicForm={ this.state.topicForm }
-                        groupForm={ this.state.groupForm }
-                        brokers={ this.state.brokers }
-                        securities={ this.state.securities } />
-                    <br/>
-                    <TopicOffsets 
-                        topic={ this.state.result.topic }
-                        group={ this.state.result.group }
-                        partitionOffsetResult={ this.state.result.partitionOffsetResult } 
-                        loadingOffset= { this.state.loadingOffset }/>
+                <Container>
+                    <Menu pointing secondary>
+                        <Menu.Item name='Offsets' active={ this.state.activeItem === 'Offsets' } onClick={ this.handleMenuClick } />
+                        <Menu.Item name='Messages' active={ this.state.activeItem === 'Messages' } onClick={ this.handleMenuClick } />
+                    </Menu> 
                 </Container>
+
+                { this.state.activeItem === 'Offsets' && <OffsetsPanel />}
+
+                { this.state.activeItem === 'Messages' && <Container>
+                    Ici on va afficher des messages
+                </Container>}
             </div>
         );
-    }
+    };
 }
 
 export default App;

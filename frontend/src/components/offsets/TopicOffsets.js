@@ -16,7 +16,11 @@ function getColor(percent) {
 
 const TopicOffsets = (props) => {
   return (
-    <Container>
+    <Container className='dimmable'>
+      <Dimmer inverted active={props.loadingOffset}>
+        <Loader />
+      </Dimmer>
+
       <Table celled textAlign='center'>
         <Table.Header>
           <Table.Row>
@@ -27,10 +31,7 @@ const TopicOffsets = (props) => {
           </Table.Row>
         </Table.Header>
 
-        <Table.Body className='dimmable'>
-          <Dimmer inverted active={props.loadingOffset}>
-            <Loader />
-          </Dimmer>
+        <Table.Body >
           {props.partitionOffsetResult.map(i => {
             const percentage = (i.offset - i.minOffset) / (i.maxOffset - i.minOffset) * 100;
             return (
