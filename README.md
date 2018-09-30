@@ -4,7 +4,7 @@ This is a all-in-one tool to do some stuff with Kafka.
 
 It has been created and is developed with :heart: by two developers ([gremi64](https://github.com/gremi64) and [Crazymeal](https://github.com/CrazyMeal)) during their lunch time :pizza: and off-work time :house:
 
-We are using [React](https://reactjs.org/) ![react logo](https://cdn.auth0.com/blog/react-js/react.png =50x50) for the frontend and [Spring Boot](https://spring.io/projects/spring-boot) with [Kotlin](https://kotlinlang.org/) for the backend
+We are using [React](https://reactjs.org/) <img src="https://cdn.auth0.com/blog/react-js/react.png" width="25px"/> for the frontend and [Spring Boot](https://spring.io/projects/spring-boot) <img src="https://cdn-images-1.medium.com/max/856/1*O68LbDvD5Dcsnez73M7v4Q.png" width="20px"/> with [Kotlin](https://kotlinlang.org/) <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Kotlin-logo.svg/2000px-Kotlin-logo.svg.png" width="15px"/> for the backend
 
 ## Features
 
