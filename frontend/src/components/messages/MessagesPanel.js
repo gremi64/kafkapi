@@ -34,9 +34,10 @@ class MessagesPanel extends Component {
     this.getConsumerConfigs();
   };
 
-  onFormSubmit = (selectedTopic, selectedBrokers, selectedSecurity) => {
+  onFormSubmit = (selectedTopic, selectedGroup, selectedBrokers, selectedSecurity) => {
     this.setState({
       selectedTopic: selectedTopic,
+      selectedGroup: selectedGroup,
       selectedBrokers: selectedBrokers,
       selectedSecurity: selectedSecurity
     }, function () {
@@ -46,7 +47,7 @@ class MessagesPanel extends Component {
 
   getMessages = () => {
     this.setState({ loadingOffset: true }, function() {
-      var uri = '/messages/' + this.state.selectedTopic;
+      var uri = '/messages/' + this.state.selectedTopic + '?group=' + this.state.selectedGroup;
       console.log('Calling API on ' + uri);
       fetch(uri)
       .then(response => {

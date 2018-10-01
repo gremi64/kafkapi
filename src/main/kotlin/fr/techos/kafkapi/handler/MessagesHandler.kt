@@ -32,7 +32,12 @@ class MessagesHandler(val kafkaConfig: KafkaConfig) {
 
         val kafkaConsumerConfig = kafkaConfig.getKafkaConsumerConfig()
 
-        kafkaConsumerConfig[ConsumerConfig.GROUP_ID_CONFIG] = group
+        if (group.isEmpty()) {
+            kafkaConsumerConfig[ConsumerConfig.GROUP_ID_CONFIG] = "myGroup"
+        } else {
+            kafkaConsumerConfig[ConsumerConfig.GROUP_ID_CONFIG] = group
+        }
+
         val kafkaConsumer = KafkaConsumer<String, String>(kafkaConsumerConfig)
 
         val results = mutableMapOf<Int, List<TopicMessage>>()
@@ -64,7 +69,12 @@ class MessagesHandler(val kafkaConfig: KafkaConfig) {
 
         val kafkaConsumerConfig = kafkaConfig.getKafkaConsumerConfig()
 
-        kafkaConsumerConfig[ConsumerConfig.GROUP_ID_CONFIG] = group
+        if (group.isEmpty()) {
+            kafkaConsumerConfig[ConsumerConfig.GROUP_ID_CONFIG] = "myGroup"
+        } else {
+            kafkaConsumerConfig[ConsumerConfig.GROUP_ID_CONFIG] = group
+        }
+
         val kafkaConsumer = KafkaConsumer<String, String>(kafkaConsumerConfig)
 
         // Assignation de la partition qui nous intéresse
@@ -84,7 +94,7 @@ class MessagesHandler(val kafkaConfig: KafkaConfig) {
         val partResult = mutableListOf<TopicMessage>()
         var workToDo = true
         while (workToDo) {
-            val polled = kafkaConsumer.poll(Duration.ofMillis(200))
+            val polled = kafkaConsumer.poll(Duration.ofMillis(400))
             polled.forEach {
                 partResult += TopicMessage(topic, group, it.partition(), it.offset(), it.timestamp(), it.key(), it.value())
             }

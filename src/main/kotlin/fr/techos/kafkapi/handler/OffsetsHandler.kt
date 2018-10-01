@@ -64,7 +64,11 @@ class OffsetsHandler(val kafkaConfig: KafkaConfig,
 
         val kafkaConsumerConfig = kafkaConfig.getKafkaConsumerConfig()
 
-        kafkaConsumerConfig[ConsumerConfig.GROUP_ID_CONFIG] = group
+        if (group.isEmpty()) {
+            kafkaConsumerConfig[ConsumerConfig.GROUP_ID_CONFIG] = "myGroup"
+        } else {
+            kafkaConsumerConfig[ConsumerConfig.GROUP_ID_CONFIG] = group
+        }
 
         if (!brokers.isNullOrEmpty()) {
             kafkaConsumerConfig.putAll(kafkaConfig.getBootstrapServersForKey(brokers!!))
@@ -75,7 +79,7 @@ class OffsetsHandler(val kafkaConfig: KafkaConfig,
         }
 
         val results = KafkaConsumerHelper.getTopicOffsetsForGroup(topic, group, kafkaConsumerConfig)
-        Thread.sleep(3000)
+
         return ok().body(fromObject(results)).toMono()
     }
 }

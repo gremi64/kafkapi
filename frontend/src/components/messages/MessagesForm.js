@@ -7,12 +7,17 @@ class MessagesForm extends Component {
     return (
       <Container textAlign='center'>
         <Divider hidden />
-        <Form onSubmit={ () => { this.props.onFormSubmit(this.state.selectedTopic, this.state.selectedBrokers, this.state.selectedSecurity) } }>
+        <Form onSubmit={ () => { this.props.onFormSubmit(this.state.selectedTopic, this.state.selectedGroup, this.state.selectedBrokers, this.state.selectedSecurity) } }>
           <Form.Group widths='equal'>
             <Form.Input fluid
               id='myTopic' 
               label='Topic'
               onChange={ (event) => { this.setState({selectedTopic: event.target.value})} }
+            />
+            <Form.Input fluid
+              id='myGroup' 
+              label='Group'
+              onChange={ (event) => { this.setState({selectedGroup: event.target.value})} }
             />
           </Form.Group>
           <Form.Group widths='equal'>
