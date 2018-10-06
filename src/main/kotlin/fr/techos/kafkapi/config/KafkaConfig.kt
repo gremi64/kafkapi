@@ -55,6 +55,25 @@ class KafkaConfig(val kafkaProperties: KafkaProperties,
         return props
     }
 
+    fun getConfigWithGivenParams(group: String, brokers: String?, security: String?): Properties {
+        val kafkaConsumerConfig = this.getKafkaConsumerConfig()
+
+        if (group.isEmpty()) {
+            kafkaConsumerConfig[ConsumerConfig.GROUP_ID_CONFIG] = "myGroup"
+        } else {
+            kafkaConsumerConfig[ConsumerConfig.GROUP_ID_CONFIG] = group
+        }
+
+        if (!brokers.isNullOrEmpty()) {
+            kafkaConsumerConfig.putAll(this.getBootstrapServersForKey(brokers!!))
+        }
+
+        if (!security.isNullOrEmpty()) {
+            kafkaConsumerConfig.putAll(this.getSecurityPropsForKey(security!!))
+        }
+        return kafkaConsumerConfig
+    }
+
     private fun kafkaEnvConfig(): Properties {
         val properties = Properties()
         logger.info { "Selected environment : ${this.kafkaEnvProperties.selected}" }

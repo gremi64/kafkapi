@@ -1,10 +1,12 @@
 package fr.techos.kafkapi.helper
 
+import fr.techos.kafkapi.model.CommitResult
 import fr.techos.kafkapi.model.OffsetsResult
 import fr.techos.kafkapi.model.PartitionOffsetResult
 import fr.techos.kafkapi.model.TopicGroupOffsetResult
 import mu.KotlinLogging
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.clients.consumer.OffsetAndMetadata
 import org.apache.kafka.common.TopicPartition
 import java.time.Duration
 import java.util.*
@@ -20,10 +22,16 @@ class KafkaConsumerHelper {
 
             kafkaConsumer.partitionsFor(topic)?.forEach {
                 logger.info("Processing partition ${it.partition()}")
-                // Assignation de la partition
+
                 val topicPartition = TopicPartition(topic, it.partition())
                 kafkaConsumer.assign(mutableListOf(topicPartition))
-                partitionOffsetResult.add(KafkaConsumerHelper.offsetsInfos(kafkaConsumer, topicPartition))
+
+                partitionOffsetResult.add(
+                        PartitionOffsetResult(
+                                topicPartition.partition(),
+                                kafkaConsumer.beginningOffsets(mutableListOf(topicPartition))?.get(topicPartition),
+                                kafkaConsumer.committed(topicPartition)?.offset(),
+                                kafkaConsumer.endOffsets(mutableListOf(topicPartition))?.get(topicPartition)))
                 logger.info("End of work for partition ${it.partition()}")
             }
 
@@ -35,8 +43,30 @@ class KafkaConsumerHelper {
                 it.partition
             }
 
-
             return TopicGroupOffsetResult(topic, group, partitionOffsetResult)
+        }
+
+        /**
+         * 1- Assign to given partition
+         * 2- Moving to given offset on partition
+         * 3- Commit the new offset
+         * 4- Retrieve the new offset
+         */
+        fun commitResult(kafkaConsumerConfig: Properties, topic: String, partition: Int, group: String, offset: Long): CommitResult {
+            val topicPartition = TopicPartition(topic, partition)
+
+            val kafkaConsumer = KafkaConsumer<String, String>(kafkaConsumerConfig)
+            kafkaConsumer.assign(mutableListOf(topicPartition))
+
+            val oldOffsetsInformation = this.setOffset(kafkaConsumer, topicPartition, offset)
+            logger.info("Partition ${topicPartition.partition()} : Current offset is now ${oldOffsetsInformation.position}. " +
+                    "Committed offset is still ->${oldOffsetsInformation.committed}")
+
+            kafkaConsumer.commitSync(mutableMapOf(Pair(topicPartition, OffsetAndMetadata(oldOffsetsInformation.position, ""))))
+            val newCommittedOffset = kafkaConsumer.committed(topicPartition)?.offset()
+            logger.info("Partition ${topicPartition.partition()} : Current committed offset is now ->$newCommittedOffset")
+
+            return CommitResult(newCommittedOffset, topic, group, partition, oldOffsetsInformation.committed)
         }
 
         /**
@@ -69,15 +99,6 @@ class KafkaConsumerHelper {
                 }
             }
             return OffsetsResult(kafkaConsumer.position(topicPartition), committed?.offset())
-        }
-
-        fun offsetsInfos(kafkaConsumer: KafkaConsumer<String, String>, topicPartition: TopicPartition): PartitionOffsetResult {
-            val partitionNumber = topicPartition.partition()
-            val currentOffset = kafkaConsumer.committed(topicPartition)?.offset()
-            val minOffset = kafkaConsumer.beginningOffsets(mutableListOf(topicPartition))?.get(topicPartition)
-            val maxOffset = kafkaConsumer.endOffsets(mutableListOf(topicPartition))?.get(topicPartition)
-
-            return PartitionOffsetResult(partitionNumber, minOffset, currentOffset, maxOffset)
         }
     }
 }
