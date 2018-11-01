@@ -65,11 +65,11 @@ class KafkaConfig(val kafkaProperties: KafkaProperties,
         }
 
         if (!brokers.isNullOrEmpty()) {
-            kafkaConsumerConfig.putAll(this.getBootstrapServersForKey(brokers!!))
+            kafkaConsumerConfig.putAll(this.getBootstrapServersForKey(brokers))
         }
 
         if (!security.isNullOrEmpty()) {
-            kafkaConsumerConfig.putAll(this.getSecurityPropsForKey(security!!))
+            kafkaConsumerConfig.putAll(this.getSecurityPropsForKey(security))
         }
         return kafkaConsumerConfig
     }

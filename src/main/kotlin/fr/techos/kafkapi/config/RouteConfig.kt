@@ -6,7 +6,6 @@ import fr.techos.kafkapi.handler.OffsetsHandler
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.MediaType
-import org.springframework.web.reactive.function.server.RequestPredicates.accept
 import org.springframework.web.reactive.function.server.router
 
 @Configuration
@@ -24,6 +23,7 @@ class RouteConfig {
     fun messagesRouter(handler: MessagesHandler) = router {
         ("/messages" and accept(MediaType.APPLICATION_JSON)).nest {
             GET("/{topic}", handler::messagesForTopic)
+            GET("/reactive/{topic}", handler::reactiveMessagesForTopic)
             GET("/{topic}/{partition}", handler::messagesForPartition)
         }
     }

@@ -7,6 +7,8 @@ import mu.KotlinLogging
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.TopicPartition
+import org.springframework.core.ParameterizedTypeReference
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.BodyInserters.fromObject
@@ -15,8 +17,12 @@ import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.ServerResponse.ok
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
+import reactor.kafka.receiver.KafkaReceiver
+import reactor.kafka.receiver.ReceiverOptions
 import java.time.Duration
 import kotlin.math.min
+
+inline fun <reified T: Any> typeRef(): ParameterizedTypeReference<T> = object: ParameterizedTypeReference<T>(){}
 
 @Component
 class MessagesHandler(val kafkaConfig: KafkaConfig) {
@@ -55,6 +61,38 @@ class MessagesHandler(val kafkaConfig: KafkaConfig) {
         kafkaConsumer.close(Duration.ofSeconds(10))
 
         return ok().body(BodyInserters.fromObject(results)).toMono()
+    }
+
+
+
+    fun reactiveMessagesForTopic(request: ServerRequest): Mono<ServerResponse> {
+        val topic: String = request.pathVariable("topic")
+        val group: String = request.queryParam("group").orElse("myGroup")
+
+        val kafkaConsumerConfig = kafkaConfig.getKafkaConsumerConfig()
+
+        if (group.isEmpty()) {
+            kafkaConsumerConfig[ConsumerConfig.GROUP_ID_CONFIG] = "myGroup"
+        } else {
+            kafkaConsumerConfig[ConsumerConfig.GROUP_ID_CONFIG] = group
+        }
+
+        val receiverOptions = ReceiverOptions
+                .create<String, String>(kafkaConsumerConfig)
+                .subscription(mutableListOf(topic))
+
+        val receiverFlux = KafkaReceiver
+                .create(receiverOptions)
+                .receive()
+                .map { record -> record.value() }
+                .doOnNext { message -> logger.info { "Received message: $message" } }
+
+        return ok()
+                .contentType(MediaType.TEXT_EVENT_STREAM)
+                .body(receiverFlux, String::class.java)
+
+//        return ok()
+//                .body(receiverFlux, typeRef<ReceiverRecord<String, String>>())
     }
 
     /**
