@@ -29,7 +29,10 @@ function getTableWithData(property, props) {
     <Container key={ property }>
       <Divider hidden={ property === '0' }/>
       <Header as='h3'>Partition: { property }</Header>
-      <Table celled textAlign='center'>
+      <Table celled textAlign='center'
+      pagination
+      paginationMaxRowsPerPage={20}
+      >
         <Table.Header>
           <Table.Row>
             <Table.HeaderCell width={2}>Offset</Table.HeaderCell>

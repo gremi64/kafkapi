@@ -26,6 +26,7 @@
 
         <kafka.version>2.0.0</kafka.version>
         <kotlin-logging.version>1.6.10</kotlin-logging.version>
+        <kafka-avro-serializer.version>5.0.1</kafka-avro-serializer.version>
     </properties>
 
     <dependencies>
@@ -90,6 +91,23 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.confluent</groupId>
+            <artifactId>kafka-avro-serializer</artifactId>
+            <version>${kafka-avro-serializer.version}</version>
+
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
     </dependencies>

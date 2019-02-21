@@ -55,7 +55,7 @@ class KafkaConsumerHelper {
         fun commitResult(kafkaConsumerConfig: Properties, topic: String, partition: Int, group: String, offset: Long): CommitResult {
             val topicPartition = TopicPartition(topic, partition)
 
-            val kafkaConsumer = KafkaConsumer<String, String>(kafkaConsumerConfig)
+            val kafkaConsumer = KafkaConsumer<ByteArray?, ByteArray>(kafkaConsumerConfig)
             kafkaConsumer.assign(mutableListOf(topicPartition))
 
             val oldOffsetsInformation = this.setOffset(kafkaConsumer, topicPartition, offset)
@@ -72,7 +72,7 @@ class KafkaConsumerHelper {
         /**
          * Renvoie l'offset commité ainsi que l'offset courant (après modification éventuelle)
          */
-        fun setOffset(kafkaConsumer: KafkaConsumer<String, String>, topicPartition: TopicPartition, offset: Long): OffsetsResult {
+        fun setOffset(kafkaConsumer: KafkaConsumer<ByteArray?, ByteArray>, topicPartition: TopicPartition, offset: Long): OffsetsResult {
             val committed = kafkaConsumer.committed(topicPartition)
 
             when (offset) {

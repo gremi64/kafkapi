@@ -1,8 +1,10 @@
 package fr.techos.kafkapi.handler
 
 import fr.techos.kafkapi.config.KafkaConfig
+import fr.techos.kafkapi.convert.Avro2Json
 import fr.techos.kafkapi.helper.KafkaConsumerHelper
 import fr.techos.kafkapi.model.TopicMessage
+import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient
 import mu.KotlinLogging
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -19,6 +21,7 @@ import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
 import reactor.kafka.receiver.KafkaReceiver
 import reactor.kafka.receiver.ReceiverOptions
+import java.nio.ByteBuffer
 import java.time.Duration
 import kotlin.math.min
 
@@ -44,7 +47,7 @@ class MessagesHandler(val kafkaConfig: KafkaConfig) {
             kafkaConsumerConfig[ConsumerConfig.GROUP_ID_CONFIG] = group
         }
 
-        val kafkaConsumer = KafkaConsumer<String, String>(kafkaConsumerConfig)
+        val kafkaConsumer = KafkaConsumer<ByteArray?, ByteArray>(kafkaConsumerConfig)
 
         val results = mutableMapOf<Int, List<TopicMessage>>()
 
@@ -113,7 +116,7 @@ class MessagesHandler(val kafkaConfig: KafkaConfig) {
             kafkaConsumerConfig[ConsumerConfig.GROUP_ID_CONFIG] = group
         }
 
-        val kafkaConsumer = KafkaConsumer<String, String>(kafkaConsumerConfig)
+        val kafkaConsumer = KafkaConsumer<ByteArray?, ByteArray>(kafkaConsumerConfig)
 
         // Assignation de la partition qui nous intéresse
         val topicPartition = TopicPartition(topic, partition)
@@ -128,16 +131,38 @@ class MessagesHandler(val kafkaConfig: KafkaConfig) {
         return ok().body(fromObject(polled.subList(0, min(polled.size, limit))))
     }
 
-    private fun pollMessages(kafkaConsumer: KafkaConsumer<String, String>, topic: String, group: String): MutableList<TopicMessage> {
+    private fun pollMessages(kafkaConsumer: KafkaConsumer<ByteArray?, ByteArray>, topic: String, group: String): MutableList<TopicMessage> {
         val partResult = mutableListOf<TopicMessage>()
         var workToDo = true
+        val a2j = Avro2Json(CachedSchemaRegistryClient("http://schema.suez.int.net-courrier.extra.laposte.fr:8081", 30))
         while (workToDo) {
-            val polled = kafkaConsumer.poll(Duration.ofMillis(400))
+            val polled = kafkaConsumer.poll(Duration.ofMillis(2000))
             polled.forEach {
-                partResult += TopicMessage(topic, group, it.partition(), it.offset(), it.timestamp(), it.key(), it.value())
+                val key = it.key()?.let { it1 -> a2j.convert(it1) } ?: ""
+                val message = a2j.convert(it.value())
+                partResult += TopicMessage(topic,
+                        group,
+                        it.partition(),
+                        it.offset(),
+                        it.timestamp(),
+                        key,
+                        message,
+                        retrieveAvroSchemaId(it.value()))
             }
             workToDo = !polled.isEmpty
         }
         return partResult
+    }
+
+
+    protected fun retrieveAvroSchemaId(payload: ByteArray): Int {
+
+            val MAGIC_BYTE: Byte = 0x0
+            val buffer = ByteBuffer.wrap(payload)
+            if (buffer.get() != MAGIC_BYTE) {
+                return -1
+            }
+            return buffer.int
+
     }
 }

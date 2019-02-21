@@ -24,7 +24,8 @@ data class TopicMessage(val topic: String,
                         val offset: Long,
                         val timestamp: Long,
                         val key: String?,
-                        val message: String?)
+                        val message: String?,
+                        var avroSchemaId: Int?)
 
 data class KafkaConsumerConfigs(val brokers : List<Pair<String, String>>,
                                 val securityOptions : List<Pair<String, String>>)
