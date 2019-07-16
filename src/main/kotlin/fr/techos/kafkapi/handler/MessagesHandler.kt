@@ -9,6 +9,7 @@ import mu.KotlinLogging
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.TopicPartition
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
@@ -31,6 +32,9 @@ inline fun <reified T: Any> typeRef(): ParameterizedTypeReference<T> = object: P
 class MessagesHandler(val kafkaConfig: KafkaConfig) {
 
     private val logger = KotlinLogging.logger {}
+
+    @Value("\${schemaregistry}")
+    private lateinit var srUrl: String
 
     /**
      * Renvoie la liste de tous les messages d'un topic, toutes partitions confondues
@@ -134,7 +138,8 @@ class MessagesHandler(val kafkaConfig: KafkaConfig) {
     private fun pollMessages(kafkaConsumer: KafkaConsumer<ByteArray?, ByteArray>, topic: String, group: String): MutableList<TopicMessage> {
         val partResult = mutableListOf<TopicMessage>()
         var workToDo = true
-        val a2j = Avro2Json(CachedSchemaRegistryClient("http://schema.suez.int.net-courrier.extra.laposte.fr:8081", 30))
+        logger.info { "Schema Registry url : $srUrl" }
+        val a2j = Avro2Json(CachedSchemaRegistryClient(srUrl, 1000))
         while (workToDo) {
             val polled = kafkaConsumer.poll(Duration.ofMillis(2000))
             polled.forEach {

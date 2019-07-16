@@ -1,3 +1,5 @@
+schemaregistry: http(s)://url:port
+
 logging:
   level:
     org:
