@@ -6,7 +6,7 @@
     "moment": "^2.22.2",
     "react": "^16.5.0",
     "react-dom": "^16.5.0",
-    "react-scripts": "1.1.5",
+    "react-scripts": "5.0.1",
     "semantic-ui-css": "^2.4.0",
     "semantic-ui-react": "^0.82.5"
   },
